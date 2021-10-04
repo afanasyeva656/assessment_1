@@ -1,16 +1,24 @@
-public class Waiter implements Runnable{
+public class Waiter extends Thread{
     private final Counter counter;
+    private final int secTarget;
 
-    public Waiter(Counter counter) {
+    public Waiter(Counter counter, int secTarget) {
         this.counter = counter;
+        this.secTarget = secTarget;
     };
 
     @Override
     public void run() {
-        while (true) {
+        while (!isInterrupted()) {
             try {
-                if (this.counter.getCountSec() % 5 == 0) {
-                    System.out.println("Ачивка 5 сек");
+                synchronized (this.counter) {
+                    counter.wait();
+                    if (counter.getCountSec() % secTarget == 0) {
+                        System.out.println("Ачивка " + secTarget + " сек");
+                    }
+
+                    // Завершение работы потока после достижения 20 сек
+                    if (counter.getCountSec() >= 20) {interrupt();};
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
